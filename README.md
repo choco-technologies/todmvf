@@ -1,6 +1,7 @@
 # todmvf
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![CI](https://github.com/choco-technologies/todmvf/actions/workflows/ci.yml/badge.svg)](https://github.com/choco-technologies/todmvf/actions/workflows/ci.yml)
 
 todmvf DMOD application module.
 
