@@ -127,6 +127,29 @@ DMOD_TEST_STEP(libtodmvf_renders_the_characters_asked_for)
     DMOD_TEST_EXPECT_EQ(r.glyphs, 2u);
 }
 
+DMOD_TEST_STEP(libtodmvf_adds_letter_spacing)
+{
+    libtodmvf_options_t o = { 24, "0x41-0x42" };
+    DMOD_TEST_EXPECT_EQ(libtodmvf_convert_file(ROBOTO, OUTPUT("track.dmvf"), &o, NULL), 0);
+    DMOD_TEST_EXPECT_TRUE(load(OUTPUT("track.dmvf")));
+    uint32_t a = glyph('A')[10], b = glyph('B')[10];            /* Advances */
+
+    o.tracking = -240;                                          /* -2.4 px */
+    DMOD_TEST_EXPECT_EQ(libtodmvf_convert_file(ROBOTO, OUTPUT("track.dmvf"), &o, NULL), 0);
+    DMOD_TEST_EXPECT_TRUE(load(OUTPUT("track.dmvf")));
+    DMOD_TEST_EXPECT_TRUE(valid());
+    DMOD_TEST_EXPECT_TRUE(glyph('A')[10] + 3U >= a && glyph('A')[10] + 2U <= a);
+    DMOD_TEST_EXPECT_TRUE(glyph('B')[10] + 3U >= b && glyph('B')[10] + 2U <= b);
+
+    o.tracking = 140;                                           /* 1.4 px */
+    DMOD_TEST_EXPECT_EQ(libtodmvf_convert_file(ROBOTO, OUTPUT("track.dmvf"), &o, NULL), 0);
+    DMOD_TEST_EXPECT_TRUE(load(OUTPUT("track.dmvf")));
+    DMOD_TEST_EXPECT_TRUE(glyph('A')[10] >= a + 1U && glyph('A')[10] <= a + 2U);
+
+    o.tracking = -LIBTODMVF_MAX_TRACKING - 1;
+    DMOD_TEST_EXPECT_EQ(libtodmvf_convert_file(ROBOTO, OUTPUT("track.dmvf"), &o, NULL), -EINVAL);
+}
+
 DMOD_TEST_STEP(libtodmvf_reports_what_it_cannot_do)
 {
     libtodmvf_options_t o = { 16, "0x50-0x40" };

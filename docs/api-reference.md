@@ -11,6 +11,7 @@
 |-------|---------|
 | `size` | Pixel size (em) the font is made for, `LIBTODMVF_MIN_SIZE` (4) ... `LIBTODMVF_MAX_SIZE` (127) |
 | `chars` | Codepoint ranges - `0x20-0x7E,0x104`, hexadecimal (`0x...`) or decimal, up to `0xFFFF`; NULL: `LIBTODMVF_DEFAULT_CHARS` (`0x20-0x7E,0xA0-0x17F`) |
+| `tracking` | Letter spacing added to every glyph's advance, in 1/100 pixel (`-240`: -2.4 px, like CSS `letter-spacing`), up to `LIBTODMVF_MAX_TRACKING` (127 px) either way; the advance is rounded after it is added, and never goes below 0 |
 
 ## Result
 
@@ -47,7 +48,7 @@ file or the new one, a failed conversion leaves the old one. `result` may
 be NULL.
 
 Returns 0, `-ENOENT` (no input), `-EBADMSG` (not a font), `-EINVAL` (a
-size out of range, wrong ranges in `chars`, a glyph too large for the
+size or a letter spacing out of range, wrong ranges in `chars`, a glyph too large for the
 format - wider or taller than 255 pixels), `-ENOMEM`, `-EIO`.
 
 ### `libtodmvf_convert`
@@ -65,6 +66,7 @@ todmvf [options] FONT SIZE
   SIZE             pixel size (em), 4 ... 127
   -o OUTPUT        the .dmvf file (default: FONT without its extension, -SIZE.dmvf)
   -c RANGES        codepoints, e.g. 0x20-0x7E,0x104 (default: 0x20-0x7E,0xA0-0x17F)
+  -t PIXELS        letter spacing added to every advance, e.g. -2.4 (CSS letter-spacing)
   -q               print nothing but errors
 ```
 

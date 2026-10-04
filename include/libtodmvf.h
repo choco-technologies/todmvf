@@ -24,6 +24,9 @@
 #define LIBTODMVF_MIN_SIZE          4u
 #define LIBTODMVF_MAX_SIZE          127u
 
+/** Largest letter spacing, either way, in 1/100 pixel. */
+#define LIBTODMVF_MAX_TRACKING      12700
+
 /** Each glyph is rendered this many times larger, then averaged down. */
 #define LIBTODMVF_SUPERSAMPLE       8u
 
@@ -34,6 +37,7 @@ typedef struct
 {
     uint8_t     size;           /**< Pixel size (em), LIBTODMVF_MIN_SIZE ... LIBTODMVF_MAX_SIZE */
     const char* chars;          /**< Codepoint ranges, e.g. "0x20-0x7E,0x104"; NULL: LIBTODMVF_DEFAULT_CHARS */
+    int32_t     tracking;       /**< Letter spacing added to every advance, in 1/100 pixel (-240: -2.4 px, CSS letter-spacing); 0: none */
 } libtodmvf_options_t;
 
 typedef struct
