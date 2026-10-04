@@ -16,6 +16,7 @@ static void print_usage(const char* name)
     Dmod_Printf("  SIZE             pixel size (em), %u ... %u\n", (unsigned)LIBTODMVF_MIN_SIZE, (unsigned)LIBTODMVF_MAX_SIZE);
     Dmod_Printf("  -o OUTPUT        the .dmvf file (default: FONT without its extension, -SIZE.dmvf)\n");
     Dmod_Printf("  -c RANGES        codepoints, e.g. 0x20-0x7E,0x104 (default: %s)\n", LIBTODMVF_DEFAULT_CHARS);
+    Dmod_Printf("  -t PIXELS        letter spacing added to every advance, e.g. -2.4 (CSS letter-spacing)\n");
     Dmod_Printf("  -q               print nothing but errors\n");
 }
 
@@ -45,6 +46,33 @@ static bool parse_size(const char* s, uint8_t* size)
     if (v < LIBTODMVF_MIN_SIZE || v > LIBTODMVF_MAX_SIZE)
         return false;
     *size = (uint8_t)v;
+    return true;
+}
+
+/* "-2.4" -> -240: pixels with up to two decimals, in 1/100 pixel */
+static bool parse_tracking(const char* s, int32_t* tracking)
+{
+    bool minus = *s == '-';
+    int32_t whole = 0, fraction = 0, scale = 10;
+    if (*s == '-' || *s == '+')
+        s++;
+    if (*s < '0' || *s > '9')
+        return false;
+    for (; *s >= '0' && *s <= '9'; s++)
+    {
+        if (whole > LIBTODMVF_MAX_TRACKING / 100)
+            return false;
+        whole = whole * 10 + (*s - '0');
+    }
+    if (*s == '.')
+    {
+        for (s++; *s >= '0' && *s <= '9'; s++, scale /= 10)
+            fraction += (*s - '0') * scale;     /* Digits past the second add 0 */
+    }
+    int32_t v = whole * 100 + fraction;
+    if (*s != '\0' || v > LIBTODMVF_MAX_TRACKING)
+        return false;
+    *tracking = minus ? -v : v;
     return true;
 }
 
@@ -83,6 +111,14 @@ int main(int argc, char* argv[])
             output = argv[++i];
         else if (strcmp(a, "-c") == 0 && value)
             options.chars = argv[++i];
+        else if (strcmp(a, "-t") == 0 && value)
+        {
+            if (!parse_tracking(argv[++i], &options.tracking))
+            {
+                Dmod_Printf("todmvf: the letter spacing must be a number of pixels, -127 ... 127, e.g. -2.4\n");
+                return 1;
+            }
+        }
         else if (strcmp(a, "-q") == 0)
             quiet = true;
         else if (input == NULL && a[0] != '-')

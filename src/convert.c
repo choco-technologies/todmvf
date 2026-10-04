@@ -204,6 +204,7 @@ typedef struct
 {
     stbtt_fontinfo  font;
     float           big;                /* Scale of the supersampled rendering */
+    double          tracking;           /* Pixels added to every advance */
     uint8_t*        render;             /* Its bitmap */
     uint32_t        render_size;
     buffer_t        glyphs;             /* dmvf_glyph_t records */
@@ -226,7 +227,9 @@ static bool add_glyph(converter_t* cv, uint32_t c, bool* missing, int* status)
 
     int advance_units, lsb;
     stbtt_GetGlyphHMetrics(&cv->font, g, &advance_units, &lsb);
-    int advance = ifloor_((double)advance_units * cv->big / Q + 0.5);      /* rounded */
+    int advance = ifloor_((double)advance_units * cv->big / Q + cv->tracking + 0.5);     /* rounded */
+    if (advance < 0)
+        advance = 0;
 
     /* The supersampled bitmap and its ink, relative to the pen at the baseline */
     int x0, y0, x1, y1, ink_x0 = 0, ink_y0 = 0, ink_x1 = 0, ink_y1 = 0;
@@ -336,7 +339,8 @@ static bool add_glyph(converter_t* cv, uint32_t c, bool* missing, int* status)
 static int convert(const uint8_t* font, size_t font_size, const char* output, const libtodmvf_options_t* o,
                    libtodmvf_result_t* result)
 {
-    if (o->size < LIBTODMVF_MIN_SIZE || o->size > LIBTODMVF_MAX_SIZE)
+    if (o->size < LIBTODMVF_MIN_SIZE || o->size > LIBTODMVF_MAX_SIZE || o->tracking < -LIBTODMVF_MAX_TRACKING ||
+        o->tracking > LIBTODMVF_MAX_TRACKING)
         return -EINVAL;
     uint8_t* chars = Dmod_Malloc((MAX_CODEPOINT + 1U) / 8U);
     converter_t* cv = Dmod_Malloc(sizeof(*cv));
@@ -360,6 +364,7 @@ static int convert(const uint8_t* font, size_t font_size, const char* output, co
         ascent = iceil_((double)ascent_units * scale);
         descent = iceil_(-(double)descent_units * scale);
         cv->big = scale * (float)Q;
+        cv->tracking = (double)o->tracking / 100.0;
         for (uint32_t c = 0; c <= MAX_CODEPOINT && status == 0; c++)
         {
             bool is_missing = false;

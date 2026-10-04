@@ -40,6 +40,7 @@ todmvf [options] FONT SIZE
   SIZE             pixel size (em), 4 ... 127
   -o OUTPUT        the .dmvf file (default: FONT without its extension, -SIZE.dmvf)
   -c RANGES        codepoints, e.g. 0x20-0x7E,0x104 (default: 0x20-0x7E,0xA0-0x17F)
+  -t PIXELS        letter spacing added to every advance, e.g. -2.4 (CSS letter-spacing)
   -q               print nothing but errors
 ```
 
