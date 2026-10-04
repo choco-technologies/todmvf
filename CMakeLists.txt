@@ -24,50 +24,55 @@ set(DMOD_BUILD_EXAMPLES OFF CACHE BOOL "Build examples")
 set(DMOD_BUILD_TOOLS OFF CACHE BOOL "Build tools")
 set(DMOD_BUILD_TEMPLATES OFF CACHE BOOL "Build templates")
 
-FetchContent_MakeAvailable(dmod)
-
+# project() before FetchContent_MakeAvailable(dmod): the compiler test runs
+# before dmod's tools-cfg.cmake adds its include directories (ARG_MAX on CI)
 project(todmvf VERSION ${DMOD_MODULE_VERSION}
-    DESCRIPTION "todmvf DMOD application module"
+    DESCRIPTION "Font to dmview font file (.dmvf) conversion"
     LANGUAGES C CXX)
+
+FetchContent_MakeAvailable(dmod)
 
 set(DMOD_DIR ${dmod_SOURCE_DIR} CACHE PATH "DMOD source directory")
 set(DMOD_SCRIPTS_DIR ${DMOD_DIR}/scripts CACHE PATH "DMOD scripts directory")
 include(${DMOD_DIR}/paths.cmake)
 dmod_setup_external_module()
 
-# Name of the module
-set(DMOD_MODULE_NAME        todmvf)
-
-# Author (should be string)
+# ======================================================================
+#               libtodmvf - font -> .dmvf library
+# ======================================================================
+# Renders TrueType / OpenType fonts (stb_truetype) into dmview font files.
+# Usable on a PC (at build time) and on a device.
+set(DMOD_MODULE_NAME        libtodmvf)
 set(DMOD_AUTHOR_NAME        "Patryk Kubiak")
-
-# Stack size for the module (should be integer)
 set(DMOD_STACK_SIZE         4096)
-
-# Priority for the thread of the module (should be integer)
 set(DMOD_PRIORITY           0)
-
-# Path to the .dmr file - enables release package creation in build/packages/
-set(DMOD_DMR_PATH           ${CMAKE_CURRENT_SOURCE_DIR}/todmvf.dmr)
-
-# List of MAL interfaces implemented by this module (leave empty if none)
+set(DMOD_DMR_PATH           ${CMAKE_CURRENT_SOURCE_DIR}/libtodmvf.dmr)
 set(DMOD_MAL_IMPLS          )
+set(DMOD_DIF_IMPLS          )
 
-#
-#   dmod_add_executable - create an executable module
-#   it has the same signature as add_executable,
-#   and can be used in the same way after the creation
-#   (for example, to link libraries)
-#
-dmod_add_executable(${DMOD_MODULE_NAME} ${DMOD_MODULE_VERSION}
-    # List of source files - can include C and C++ files
-    src/todmvf.c
+dmod_add_library(${DMOD_MODULE_NAME} ${DMOD_MODULE_VERSION}
+    src/convert.c
 )
 
-# To depend on another module's headers, use:
-#   dmod_link_modules(${DMOD_MODULE_NAME}
-#       other_module@1.0
-#   )
+# libdmview: only dmview_format.h (the .dmvf layout)
+dmod_link_modules(${DMOD_MODULE_NAME}
+    libdmview@>=0.5
+)
+
+target_include_directories(${DMOD_MODULE_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/stb
+)
+
+target_include_directories(${DMOD_MODULE_NAME}_if INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
 
 enable_testing()
 add_subdirectory(tests)
+
+# ======================================================================
+#               todmvf - command-line tool on top of libtodmvf
+# ======================================================================
+add_subdirectory(apps/todmvf)
