@@ -1,14 +1,15 @@
 # todmvf Documentation
 
-Welcome to the todmvf module documentation.
+todmvf renders TrueType / OpenType fonts into dmview's font files
+(`.dmvf`): libtodmvf does the conversion, todmvf is its command-line tool.
 
 ## Contents
 
-- **[api-reference.md](api-reference.md)** - Command-line usage and behavior
+- **[api-reference.md](api-reference.md)** - libtodmvf, and the todmvf command line
 
 View documentation using `dmf-man`:
 
 ```bash
-dmf-man todmvf          # Main documentation
-dmf-man todmvf api      # API reference
+dmf-man libtodmvf          # Main documentation
+dmf-man libtodmvf api      # API reference
 ```

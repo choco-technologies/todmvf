@@ -1,6 +1,7 @@
 # #############################################################################
 # 
-# 	This is an example of a simple application module.
+# 	libtodmvf - font -> .dmvf conversion (a library module). The todmvf
+# 	command-line tool is built with CMake (apps/todmvf).
 #
 # #############################################################################
 DMOD_DIR=@DMOD_DIR@
@@ -15,7 +16,7 @@ include $(DMOD_DIR)/paths.mk
 # -----------------------------------------------------------------------------
 
 # The name of the module
-DMOD_MODULE_NAME=todmvf
+DMOD_MODULE_NAME=libtodmvf
 
 # The version of the module
 DMOD_MODULE_VERSION=0.1
@@ -24,13 +25,13 @@ DMOD_MODULE_VERSION=0.1
 DMOD_AUTHOR_NAME=Patryk Kubiak
 
 # The list of C sources
-DMOD_CSOURCES=src/todmvf.c
+DMOD_CSOURCES=src/convert.c
 
 # The list of C++ sources
 DMOD_CXXSOURCES=
 
 # The list of include directories
-DMOD_INC_DIRS=
+DMOD_INC_DIRS=include src third_party/stb
 
 # The list of libraries to link
 DMOD_LIBS=
@@ -46,4 +47,4 @@ DMOD_MAL_IMPLS=
 # -----------------------------------------------------------------------------
 #   Include the dmod app makefile
 # -----------------------------------------------------------------------------
-include $(DMOD_DMF_APP_FILE_PATH)
+include $(DMOD_DMF_LIB_FILE_PATH)
